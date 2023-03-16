@@ -1,5 +1,7 @@
 require 'simplecov' if ENV["COVERAGE"] == "true"
 
+require_relative "support/matchers/perform_database_query_matcher"
+
 RSpec.configure do |config|
   config.disable_monkey_patching!
   config.filter_run focus: true

@@ -227,6 +227,25 @@ RSpec.describe ActiveAdmin::Views::PaginatedCollection do
       end
     end
 
+    it "makes no expensive COUNT queries when pagination_total is false" do
+      undecorated_collection = Post.all.page(1).per(30)
+
+      expect { paginated_collection(undecorated_collection, pagination_total: false) }
+        .not_to perform_database_query("SELECT COUNT(*) FROM \"posts\"")
+
+      decorated_collection = controller_with_decorator("index", PostDecorator).apply_collection_decorator(undecorated_collection)
+
+      expect { paginated_collection(decorated_collection, pagination_total: false) }
+        .not_to perform_database_query("SELECT COUNT(*) FROM \"posts\"")
+    end
+
+    it "makes no COUNT queries to figure out the last element of each page" do
+      undecorated_collection = Post.all.page(1).per(30)
+
+      expect { paginated_collection(undecorated_collection) }
+        .not_to perform_database_query("SELECT COUNT(*) FROM (SELECT")
+    end
+
     context "when specifying per_page: array option" do
       let(:collection) do
         posts = 10.times.map { Post.new }
